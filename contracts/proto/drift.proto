@@ -1,0 +1,12 @@
+syntax = "proto3";
+package docsynth.drift.v1;
+
+option java_package = "com.docsynth.proto.drift.v1";
+option java_multiple_files = true;
+
+// DriftNarrator is reserved for v2 — semantic changelog generation. Not used
+// in v1; the proto is defined for forward-compat and is the only message in
+// the package so that proto compilation is not wasted.
+message TenantContext {
+  string jwt = 1;
+}

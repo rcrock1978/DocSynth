@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  JAVA_VERSION: '21'
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '20'
+
+jobs:
+  build-test-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Backend build + test
+        working-directory: backend
+        run: |
+          mvn -B verify
+
+      - name: AI sidecar test
+        working-directory: ai-sidecar
+        run: |
+          pip install -e ".[dev]"
+          pytest
+
+      - name: AI eval gates
+        run: |
+          pytest specs/evals/
+
+      - name: Frontend build + lint + e2e
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build:operator
+          npx playwright test
+
+  sast-sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java, python, javascript, typescript
+      - uses: github/codeql-action/analyze@v3
+
+  container-sign:
+    needs: build-test-eval
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and sign backend image
+        working-directory: backend
+        run: |
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+          docker build -t ${{ env.REGISTRY }}/docsynth-backend:${{ github.sha }} .
+          cosign sign --yes ${{ env.REGISTRY }}/docsynth-backend:${{ github.sha }}
+
+  terraform-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Terraform plan (dev)
+        working-directory: infra/envs/dev
+        run: |
+          terraform init
+          terraform plan -out=tfplan
+          terraform show -no-color tfplan

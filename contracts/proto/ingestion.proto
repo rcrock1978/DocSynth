@@ -1,0 +1,51 @@
+syntax = "proto3";
+package docsynth.ingestion.v1;
+
+option java_package = "com.docsynth.proto.ingestion.v1";
+option java_multiple_files = true;
+
+service IngestionEnhancer {
+  // Enrich a parsed endpoint with derived metadata.
+  rpc EnrichEndpoint(EnrichEndpointRequest) returns (EnrichEndpointResponse);
+
+  // Suggest operationId for endpoints that lack one (edge case in spec).
+  rpc SuggestOperationId(SuggestOperationIdRequest) returns (SuggestOperationIdResponse);
+}
+
+message EndpointDescriptor {
+  string method = 1;
+  string path = 2;
+  string summary = 3;
+  string description = 4;
+  repeated string tags = 5;
+}
+
+message TenantContext {
+  // RS256 JWT signed by the Java backend; Python validates via JWKS.
+  // tenant_id claim MUST match the in-message tenant_id; reject otherwise.
+  string jwt = 1;
+}
+
+message EnrichEndpointRequest {
+  string tenant_id = 1;
+  string api_spec_id = 2;
+  EndpointDescriptor endpoint = 3;
+  TenantContext tenant_context = 10;
+}
+
+message EnrichEndpointResponse {
+  string enriched_description = 1;
+  repeated string suggested_tags = 2;
+  float confidence = 3;
+}
+
+message SuggestOperationIdRequest {
+  string tenant_id = 1;
+  EndpointDescriptor endpoint = 2;
+  TenantContext tenant_context = 10;
+}
+
+message SuggestOperationIdResponse {
+  string operation_id = 1;
+  float confidence = 2;
+}

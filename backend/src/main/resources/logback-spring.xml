@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="co.elastic.logging.logback.EcsEncoder">
+      <serviceName>docsynth-backend</serviceName>
+      <includeMarkers>true</includeMarkers>
+      <includeOrigin>false</includeOrigin>
+      <includeStackTrace>true</includeStackTrace>
+    </encoder>
+  </appender>
+
+  <!-- Pattern layout for local dev only; production always uses JSON. -->
+  <springProfile name="dev">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n</pattern>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE" />
+    </root>
+  </springProfile>
+
+  <springProfile name="!dev">
+    <root level="INFO">
+      <appender-ref ref="JSON" />
+    </root>
+  </springProfile>
+
+  <!-- Suppress noisy framework logs at INFO; keep at WARN. -->
+  <logger name="org.springframework" level="WARN" />
+  <logger name="org.hibernate" level="WARN" />
+  <logger name="com.azure" level="WARN" />
+
+  <!-- Reject any logger that might try to print secret-looking values. -->
+  <logger name="com.docsynth.infrastructure.security" level="INFO" additivity="false">
+    <appender-ref ref="JSON" />
+  </logger>
+</configuration>

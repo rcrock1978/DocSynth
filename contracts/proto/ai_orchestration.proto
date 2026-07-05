@@ -1,0 +1,86 @@
+syntax = "proto3";
+package docsynth.documentation.v1;
+
+option java_package = "com.docsynth.proto.documentation.v1";
+option java_multiple_files = true;
+
+service DocGenerator {
+  // Generate a code example for an endpoint in a target language.
+  rpc GenerateCodeExample(GenerateCodeExampleRequest) returns (GenerateCodeExampleResponse);
+
+  // Enhance or fill in a description from a short summary.
+  rpc EnhanceDescription(EnhanceDescriptionRequest) returns (EnhanceDescriptionResponse);
+
+  // Stream progress for long-running generation work (e.g., large docset).
+  rpc GenerateDocSet(GenerateDocSetRequest) returns (stream GenerateDocSetProgress);
+}
+
+message EndpointDescriptor {
+  string method = 1;
+  string path = 2;
+  string summary = 3;
+  string description = 4;
+  repeated string tags = 5;
+}
+
+message TenantContext {
+  string jwt = 1;
+}
+
+message GenerateCodeExampleRequest {
+  string tenant_id = 1;
+  string api_spec_id = 2;
+  EndpointDescriptor endpoint = 3;
+  string language = 4;  // e.g., "curl", "python", "java"
+  TenantContext tenant_context = 10;
+}
+
+message GenerateCodeExampleResponse {
+  string code = 1;
+  string language = 2;
+  string prompt_template_version = 3;  // for eval reproducibility
+  float confidence = 4;
+}
+
+message EnhanceDescriptionRequest {
+  string tenant_id = 1;
+  string summary = 2;
+  TenantContext tenant_context = 10;
+}
+
+message EnhanceDescriptionResponse {
+  string enhanced = 1;
+  string prompt_template_version = 2;
+  float confidence = 3;
+}
+
+message GenerateDocSetRequest {
+  string tenant_id = 1;
+  string api_spec_id = 2;
+  string doc_set_id = 3;
+  repeated string target_languages = 4;
+  TenantContext tenant_context = 10;
+}
+
+message GenerateDocSetProgress {
+  oneof update {
+    EndpointGenerated endpoint_done = 1;
+    DocSetCompleted docset_done = 2;
+    GenerationFailed failed = 3;
+  }
+}
+
+message EndpointGenerated {
+  string method = 1;
+  string path = 2;
+}
+
+message DocSetCompleted {
+  int32 endpoints_processed = 1;
+  int32 endpoints_failed = 2;
+}
+
+message GenerationFailed {
+  string reason = 1;
+  bool retryable = 2;
+}

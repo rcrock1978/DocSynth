@@ -1,0 +1,52 @@
+target/
+*.class
+*.jar
+*.war
+*.iml
+.idea/
+.vscode/
+.gradle/
+build/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Local env
+.env
+.env.local
+*.env
+!.env.example
+
+# Terraform
+.terraform/
+*.tfstate*
+*.tfvars
+.terraform.lock.hcl
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# OS
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~

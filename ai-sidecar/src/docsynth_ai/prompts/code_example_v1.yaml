@@ -1,0 +1,11 @@
+template_version: v1.0
+template: |
+  Generate a syntactically valid {language} code example that calls the
+  following HTTP endpoint:
+    Method: {method}
+    Path: {path}
+    Summary: {summary}
+
+  Use only standard library or well-known packages. Include auth header
+  placeholders (do not invent real tokens). Do not include comments that
+  describe the prompt; only the code.

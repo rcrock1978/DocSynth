@@ -1,0 +1,9 @@
+thresholds:
+  code_example:
+    syntactic_validity: 0.98
+    relevance: 0.85
+    faithfulness: 0.90
+  description_enhance:
+    fluency: 0.85
+    faithfulness: 0.90
+    no_hallucination: 0.95

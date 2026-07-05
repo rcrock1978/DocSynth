@@ -1,0 +1,11 @@
+version: "v1"
+managedBy: Buf
+plugins:
+  - name: java
+    out: ../backend/src/main/java
+    opt:
+      - java_package=com.docsynth.proto
+  - name: python
+    out: ../ai-sidecar/src/docsynth_ai/generated
+    opt:
+      - pyi_out=../ai-sidecar/src/docsynth_ai/generated

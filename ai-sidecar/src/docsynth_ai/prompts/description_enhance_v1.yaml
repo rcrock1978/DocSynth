@@ -1,0 +1,11 @@
+template_version: v1.0
+template: |
+  Expand the following one-line summary into a 2-3 sentence description
+  suitable for an API reference page.
+
+  Summary: {summary}
+
+  Constraints:
+  - Plain prose, no Markdown headers.
+  - Do not invent fields, status codes, or behavior not implied by the summary.
+  - Length: 30-80 words.
